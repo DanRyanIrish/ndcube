@@ -9,6 +9,8 @@ import copy
 import numpy as np
 import astropy.units as u
 
+from ndcube.utils import wcs
+
 __all__ = ['wcs_axis_to_data_axis', 'data_axis_to_wcs_axis', 'select_order',
            'convert_extra_coords_dict_to_input_format', 'get_axis_number_from_axis_name']
 
@@ -150,3 +152,152 @@ def get_axis_number_from_axis_name(axis_name, world_axis_physical_types):
                          "a physical axis type. {0} not in any of {1}".format(
                              str_axis, world_axis_types))
     return axis_index[0]
+
+
+def collapse_ndcube_over_axis(cube, data_axis, how):
+    """Sums a cube over one of its axes.
+
+    Parameters
+    ----------
+    cube: `ndcube.ndcube.NDCube`
+        Cube to being summed.
+
+    data_axis: `int`
+        The axis number (data order, not wcs order) over which to be summed.
+
+    how: `str`
+        Identifies how the axis should be collapsed.  Options are outlined in doctstring
+        of _apply_reduction_over_axis().
+
+    Returns
+    -------
+    new_cube: `ndcube.ndcube.NDCube`
+        Summed NDcube with dimensions N-1 where N is number of dimensions of original cube.
+
+    """
+    # Get new data, uncertainty and mask as masked arrays.
+    new_data, new_uncertainty, new_mask = _apply_reduction_over_axis(
+        cube.data, cube.uncertainty.array, cube.mask, data_axis, how)
+    # Slice WCS and extra coords at the midpoint along summing axis.
+    new_wcs, new_missing_axis, new_extra_coords_wcs_axis = _get_midpoint_ndcube_coords(
+        cube.wcs, cube.missing_axis, cube._extra_coords_wcs_axis, data_axis,
+        cube.dimensions.value[data_axis])
+    new_extra_coords = convert_extra_coords_dict_to_input_format(
+        new_extra_coords_wcs_axis, new_missing_axis)
+    # Return new NDCube
+    return new_data, new_wcs, new_uncertainty, new_mask, new_extra_coords, new_missing_axis
+
+
+def _apply_reduction_over_axis(data, uncertainty, mask, axis, how):
+    """
+    Collapses arrays described by the same mask over an axis using a user-selected function.
+
+    The how arg describes the function to be applied.  The options are:
+    'sum', 'mean'.
+
+    Parameters
+    ----------
+    data: `numpy.ndarray`
+        Data arrays over which function should be applied.
+
+    uncertainty: `numpy.ndarray`
+        Uncertainty for each elements in data.  Must be same shape as data.
+
+    mask: `numpy.ndarray` of `bool` type
+        Mask for the arrays. True implies a masked value.
+        Must be of same shape of arrays in arrays arg.
+
+    axis: `int`
+        Axis over which function should be applied.
+
+    how: `str`
+        Describes which function should be used.  See top of docstring for options.
+
+    Returns
+    -------
+    new_data: `numpy.ndarray`
+        New data array collapsed over the given axis via the selected method.
+
+    new_uncertainty: `numpy.ndarray`
+        Uncertainties corresponding to new data.
+
+    new_mask: `numpy.ndarray` of `bool`
+        The new collapsed mask.
+
+    """
+    if how is "sum":
+        new_data = np.ma.masked_array(data, mask).sum(axis)
+        new_mask = new_data.mask
+        new_data = new_data.data
+        new_uncertainty = np.sqrt(
+            np.ma.masked_array(uncertainty**2, mask).sum(axis)).data
+    elif how is "mean":
+        new_data = np.ma.masked_array(data, mask).mean(axis)
+        new_mask = new_data.mask
+        new_data = new_data.data
+        lengths_along_axis = np.ma.masked_array(np.ones(data.shape), mask).sum(axis).data
+        new_uncertainty = np.sqrt(np.ma.masked_array(
+            uncertainty**2, mask).sum(axis)).data/lengths_along_axis
+    else:
+        raise ValueError("Unrecognized value for 'how' arg.")
+    return new_data, new_uncertainty, new_mask
+
+
+def _get_midpoint_ndcube_coords(wcs_object, missing_axis, _extra_coords_wcs_axis, data_axis, len_axis):
+    """
+    Returns a wcs and extra_coords dict sliced at the midpoint along an axis.
+
+    The midpoint is defined as the rounded integer index closest to the midpoint
+    along the selected axis.
+
+    Parameters
+    ----------
+    wcs_object: `ndcube.utils.wcs.WCS`
+        The WCS object to be sliced.
+
+    missing_axis: `list` of `bool`
+        Denotes which WCS axes which are "missing" from data.  True implies missing.
+        Order is same as WCS axes.
+
+    _extra_coords_wcs_axis: `dict` of `dict`
+        Extra coords dictionary as defined by `ndcube.NDCube._extra_coords_wcs_axis`.
+
+    data_axis: `int`
+        Number of axis aong which midpoint is to be found.  Numbering follows the
+        data orientation, i.e. reversed relative to the WCS axes' order.
+
+    len_axis: `int`
+        Length of data axis over which we are finding the midpoint.
+
+    Returns
+    -------
+    new_wcs_object: `ndcube.utils.wcs.WCS`
+        The WCS object to be sliced at the midpoint along the chosen axis.
+
+    new_missing_axis: `list` of `bool`
+        Denotes which WCS axes which are "missing" from data after slicing the WCS object.
+        Order follows WCS axes' order.
+
+    new_extra_coords_wcs_axis: `dict` of `dict`
+        Extra coords dictionary where coords along chosen axis are sliced at the midpoint.
+
+    """
+    # Get number of dimensions.
+    n_dim = sum(np.invert(np.array(missing_axis)))
+    # Get int closest to midpoint index along summed axis.
+    midpoint_index = int(len_axis//2)
+    # Produce new WCS by slicing at median of summed axis.
+    item = [slice(None)]*n_dim
+    item[data_axis] = midpoint_index
+    item = tuple(item)
+    new_wcs_object, new_missing_axis = wcs._wcs_slicer(
+        wcs_object, missing_axis, item)
+    # Reduce extra coords along summed axis to median value.
+    wcs_axis = data_axis_to_wcs_axis(data_axis, missing_axis)
+    new_extra_coords_wcs_axis = copy.deepcopy(_extra_coords_wcs_axis)
+    for key in new_extra_coords_wcs_axis:
+        if new_extra_coords_wcs_axis[key]["wcs axis"] == wcs_axis:
+            new_extra_coords_wcs_axis[key]["value"] = \
+              new_extra_coords_wcs_axis[key]["value"][midpoint_index]
+    # Return
+    return new_wcs_object, new_missing_axis, new_extra_coords_wcs_axis

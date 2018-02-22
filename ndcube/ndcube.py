@@ -456,6 +456,23 @@ class NDCube(NDCubeSlicingMixin, NDCubePlotMixin, astropy.nddata.NDArithmeticMix
         item[extra_coord_dict["axis"]] = slice(w[0], w[1]+1)
         return self[tuple(item)]
 
+    def collapse_axis(self, axis, how):
+        """Sums NDCube over given axis."""
+        new_data, new_wcs, new_uncertainty, new_mask, new_extra_coords, new_missing_axis = \
+          utils.cube.collapse_ndcube_over_axis(self, axis, how)
+        return self._new_instance(new_data, new_wcs, uncertainty=new_uncertainty, mask=new_mask,
+                                  meta=self.meta, unit=self.unit, extra_coords=new_extra_coords,
+                                  missing_axis=new_missing_axis)
+
+    @classmethod
+    def _new_instance(cls, data, wcs, uncertainty=None, mask=None, meta=None, unit=None,
+                      extra_coords=None, copy=False, missing_axis=None, **kwargs):
+        """
+        Instantiate a new instance of this class using given data.
+        """
+        return cls(data, wcs, uncertainty=uncertainty, mask=mask, meta=meta, unit=unit,
+                   extra_coords=extra_coords, copy=copy, missing_axis=missing_axis, **kwargs)
+
     def __repr__(self):
         return (
             """NDCube
