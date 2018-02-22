@@ -179,7 +179,7 @@ def collapse_ndcube_over_axis(cube, data_axis, how):
     new_data, new_uncertainty, new_mask = _apply_reduction_over_axis(
         cube.data, cube.uncertainty.array, cube.mask, data_axis, how)
     # Slice WCS and extra coords at the midpoint along summing axis.
-    new_wcs, new_missing_axis, new_extra_coords_wcs_axis = _get_midpoint_ndcube_coords(
+    new_wcs, new_missing_axis, new_extra_coords_wcs_axis = _get_0th_ndcube_coords(
         cube.wcs, cube.missing_axis, cube._extra_coords_wcs_axis, data_axis,
         cube.dimensions.value[data_axis])
     new_extra_coords = convert_extra_coords_dict_to_input_format(
@@ -243,7 +243,7 @@ def _apply_reduction_over_axis(data, uncertainty, mask, axis, how):
     return new_data, new_uncertainty, new_mask
 
 
-def _get_midpoint_ndcube_coords(wcs_object, missing_axis, _extra_coords_wcs_axis, data_axis, len_axis):
+def _get_0th_ndcube_coords(wcs_object, missing_axis, extra_coords_wcs_axis, data_axis, len_axis):
     """
     Returns a wcs and extra_coords dict sliced at the midpoint along an axis.
 
@@ -259,7 +259,7 @@ def _get_midpoint_ndcube_coords(wcs_object, missing_axis, _extra_coords_wcs_axis
         Denotes which WCS axes which are "missing" from data.  True implies missing.
         Order is same as WCS axes.
 
-    _extra_coords_wcs_axis: `dict` of `dict`
+    extra_coords_wcs_axis: `dict` of `dict`
         Extra coords dictionary as defined by `ndcube.NDCube._extra_coords_wcs_axis`.
 
     data_axis: `int`
@@ -285,19 +285,21 @@ def _get_midpoint_ndcube_coords(wcs_object, missing_axis, _extra_coords_wcs_axis
     # Get number of dimensions.
     n_dim = sum(np.invert(np.array(missing_axis)))
     # Get int closest to midpoint index along summed axis.
-    midpoint_index = int(len_axis//2)
+    index = 0
     # Produce new WCS by slicing at median of summed axis.
     item = [slice(None)]*n_dim
-    item[data_axis] = midpoint_index
+    item[data_axis] = index
     item = tuple(item)
     new_wcs_object, new_missing_axis = wcs._wcs_slicer(
         wcs_object, missing_axis, item)
-    # Reduce extra coords along summed axis to median value.
+    # Reduce extra coords along summed axis to 0th value.
     wcs_axis = data_axis_to_wcs_axis(data_axis, missing_axis)
-    new_extra_coords_wcs_axis = copy.deepcopy(_extra_coords_wcs_axis)
+    # Make CDELT the width of the pre-collapsed axis.
+    new_wcs_object.wcs.cdelt[wcs_axis] = new_wcs_object.wcs.cdelt[wcs_axis] * len_axis
+    new_extra_coords_wcs_axis = copy.deepcopy(extra_coords_wcs_axis)
     for key in new_extra_coords_wcs_axis:
         if new_extra_coords_wcs_axis[key]["wcs axis"] == wcs_axis:
             new_extra_coords_wcs_axis[key]["value"] = \
-              new_extra_coords_wcs_axis[key]["value"][midpoint_index]
+              new_extra_coords_wcs_axis[key]["value"][index]
     # Return
     return new_wcs_object, new_missing_axis, new_extra_coords_wcs_axis
