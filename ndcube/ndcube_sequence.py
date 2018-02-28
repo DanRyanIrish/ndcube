@@ -1,5 +1,6 @@
-import numpy as np
+import copy
 
+import numpy as np
 import astropy.units as u
 import sunpy.map
 from sunpy.map import MapCube
@@ -204,6 +205,12 @@ class NDCubeSequence:
                 result_cubes.append(ndcube.__getitem__(tuple(result_cubes_slice)))
         # creating a new sequence with the result_cubes keeping the meta and common axis as axis
         return self._new_instance(result_cubes, meta=self.meta)
+
+    def collapse_cube_axis(self, cube_axis, how):
+        """Collapses cubes in sequence along an axis given a valid method, e.g. sum, mean."""
+        new_sequence = copy.deepcopy(self)
+        new_sequence.data = [cube.collapse_axis(cube_axis, how) for cube in new_sequence.data]
+        return new_sequence
 
     def __repr__(self):
         return (
