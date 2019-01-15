@@ -12,6 +12,7 @@ from astropy import wcs
 from astropy.wcs._wcs import InconsistentAxisTypesError
 
 from ndcube.utils import cube as utils_cube
+from ndcube.utils import wcs as utils_wcs
 
 __all__ = ['WCS', 'reindex_wcs', 'wcs_ivoa_mapping', 'get_dependent_data_axes',
            'get_dependent_data_axes', 'axis_correlation_matrix',
@@ -139,6 +140,10 @@ def _wcs_slicer(wcs, missing_axis, item):
     missing_axis: `list` of `bool`
         Altered missing axis list.  Note the ordering has been reversed to reflect the data
         (numpy) axis ordering convention.
+        
+    dropped_coords:
+        Coordinates which have been dropped in the slicing process is collected in a tuple called
+        `dropped_coords`. 
 
     """
     # normal slice.
@@ -158,7 +163,7 @@ def _wcs_slicer(wcs, missing_axis, item):
                     item_checked.append(slice(None, None, None))
             else:
                 item_checked.append(slice(0, 1))
-        new_wcs = wcs.slice((item_checked))
+        item_ = (item_checked)
     # item is int then slicing axis.
     elif isinstance(item, int) or isinstance(item, np.int64):
         # using index to keep track of whether the int(which is converted to
@@ -177,7 +182,7 @@ def _wcs_slicer(wcs, missing_axis, item):
                     item_checked.append(slice(None, None, None))
             else:
                 item_checked.append(slice(0, 1))
-        new_wcs = wcs.slice(item_checked)
+        item_ = item_checked
     # if it a tuple like [0:2, 0:3, 2] or [0:2, 1:3]
     elif isinstance(item, tuple):
         # this is used to not exceed the range of the item tuple
@@ -197,18 +202,37 @@ def _wcs_slicer(wcs, missing_axis, item):
                 item_checked.append(slice(0, 1))
         # if all are slice in the item tuple
         if _all_slice(item_checked):
-            new_wcs = wcs.slice((item_checked))
+            item_ = (item_checked)
         # if all are not slices some of them are int then
         else:
             # this will make all the item in item_checked as slice.
             item_ = _slice_list(item_checked)
-            new_wcs = wcs.slice(item_)
             for i, it in enumerate(item_checked):
                 if isinstance(it, int):
                     missing_axis[i] = True
+    else:
+        pass
     # returning the reverse list of missing axis as in the item here was reverse of
     # what was inputed so we had a reverse missing_axis.
-    return new_wcs, missing_axis[::-1]
+    dropped_coords = [] # Initiating new list to collect dropped coords in the process of slicing.
+    # Checking item_ slices for dropped axes if any
+    for i, slice_element in enumerate(item_):
+        if missing_axis[i] is False and (slice_element.stop - slice_element.start) == 1:
+            pix_coords = [0] * len(item_) # Setting up a list of pixel coords as input to all_pix2world.
+            pix_coords[i] = slice_element.start # Enter pixel coordinate for this axis. 
+            # Since we are only dealing with independent axes the other axes can remain at 0.
+            real_world_coords = wcs.all_pix2world(*pix_coords, 0)[i]
+            # Unravel the arguments in the pix_coords array using the * prefix.
+            # Added in index to obtain the i-th element in the resultant real world coords list of arrays. 
+            axis_name = wcs_ivoa_mapping[wcs.wcs.ctype[i]] 
+            # Added an index to get the axis name for the i-th element of wcs's ctype list.   
+            # CTYPE name now mapped to its IVOA counterpart
+            dropped_coords.append((axis_name, None, real_world_coords)) 
+            # The dropped_coords list of tuples with 3 elements to collect extra coordinates resulted in slicing
+            # now complete. 
+            # The dropped_coords's first variable is the IVOA axis name corresponding to the CTYPE.
+    new_wcs = wcs.slice(item_)
+    return new_wcs, missing_axis[::-1], dropped_coords
 
 
 def _all_slice(obj):
