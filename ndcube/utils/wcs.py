@@ -235,21 +235,20 @@ def _wcs_slicer(wcs, missing_axis, item):
                 slice_step = slice_element.step
             if slice_stop - slice_start == 1:
             # proceed with rest of if statement...
-        #if missing_axis[i] is False and (slice_element.stop - slice_element.start) == 1:
-            pix_coords = [0] * len(item_) # Setting up a list of pixel coords as input to all_pix2world.
-            pix_coords[i] = slice_element.start # Enter pixel coordinate for this axis. 
-            # Since we are only dealing with independent axes the other axes can remain at 0.
-            real_world_coords = wcs.all_pix2world(*pix_coords, 0)[i]
-            # (Bug here?)
-            # Unravel the arguments in the pix_coords array using the * prefix.
-            # Added in index to obtain the i-th element in the resultant real world coords list of arrays. 
-            axis_name = wcs_ivoa_mapping[wcs.wcs.ctype[i]] 
-            # Added an index to get the axis name for the i-th element of wcs's ctype list.   
-            # CTYPE name now mapped to its IVOA counterpart
-            dropped_coords.append((axis_name, None, real_world_coords)) 
-            # The dropped_coords list of tuples with 3 elements to collect extra coordinates resulted in slicing
-            # now complete. 
-            # The dropped_coords's first variable is the IVOA axis name corresponding to the CTYPE.
+            #if missing_axis[i] is False and (slice_element.stop - slice_element.start) == 1:
+                pix_coords = [0] * len(item_) # Setting up a list of pixel coords as input to all_pix2world.
+                pix_coords[i] = slice_element.start # Enter pixel coordinate for this axis. 
+                # Since we are only dealing with independent axes the other axes can remain at 0.
+                real_world_coords = wcs.all_pix2world(*pix_coords, 0)[i]
+                # Unravel the arguments in the pix_coords array using the * prefix.
+                # Added in index to obtain the i-th element in the resultant real world coords list of arrays. 
+                axis_name = wcs_ivoa_mapping[wcs.wcs.ctype[i]] 
+                # Added an index to get the axis name for the i-th element of wcs's ctype list.   
+                # CTYPE name now mapped to its IVOA counterpart
+                dropped_coords.append((axis_name, None, real_world_coords)) 
+                # The dropped_coords list of tuples with 3 elements to collect extra coordinates resulted in slicing
+                # now complete. 
+                # The dropped_coords's first variable is the IVOA axis name corresponding to the CTYPE.
     new_wcs = wcs.slice(item_)
     return new_wcs, missing_axis[::-1], dropped_coords
 
