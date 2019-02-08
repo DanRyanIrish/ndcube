@@ -222,6 +222,7 @@ def _wcs_slicer(wcs, missing_axis, item):
             pix_coords[i] = slice_element.start # Enter pixel coordinate for this axis. 
             # Since we are only dealing with independent axes the other axes can remain at 0.
             real_world_coords = wcs.all_pix2world(*pix_coords, 0)[i]
+            # (Bug here?)
             # Unravel the arguments in the pix_coords array using the * prefix.
             # Added in index to obtain the i-th element in the resultant real world coords list of arrays. 
             axis_name = wcs_ivoa_mapping[wcs.wcs.ctype[i]] 
