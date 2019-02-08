@@ -218,23 +218,23 @@ def _wcs_slicer(wcs, missing_axis, item):
     # Checking item_ slices for dropped axes if any
     for i, slice_element in enumerate(item_):
         if missing_axis[i] is False:
-        # Determine the start index
-        if slice_element.start is None:
-            slice_start = 0
-        else:
-            slice_start = slice_element.start
-        # Determine the stop index.
-        if slice_element.stop is None:
-            slice_stop = wcs._naxis[i] # wcs._naxis is a list of the length of each axis
-        else:
-            slice_stop = slice_element.stop
-        # Determine the slice's step.  (We will use this is a later version of this code to be more thorough.  For now we'll calculate it and not use it.)
-        if slice_element.step is None:
-            slice_step = 1
-        else:
-            slice_step = slice_element.step
-        if slice_stop - slice_start == 1:
-        # proceed with rest of if statement...
+            # Determine the start index
+            if slice_element.start is None:
+                slice_start = 0
+            else:
+                slice_start = slice_element.start
+            # Determine the stop index.
+            if slice_element.stop is None:
+                slice_stop = wcs._naxis[i] # wcs._naxis is a list of the length of each axis
+            else:
+                slice_stop = slice_element.stop
+            # Determine the slice's step.  (We will use this is a later version of this code to be more thorough.  For now we'll calculate it and not use it.)
+            if slice_element.step is None:
+                slice_step = 1
+            else:
+                slice_step = slice_element.step
+            if slice_stop - slice_start == 1:
+            # proceed with rest of if statement...
         #if missing_axis[i] is False and (slice_element.stop - slice_element.start) == 1:
             pix_coords = [0] * len(item_) # Setting up a list of pixel coords as input to all_pix2world.
             pix_coords[i] = slice_element.start # Enter pixel coordinate for this axis. 
