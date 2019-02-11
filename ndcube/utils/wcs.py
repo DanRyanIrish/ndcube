@@ -225,7 +225,7 @@ def _wcs_slicer(wcs, missing_axis, item):
                 slice_start = slice_element.start
             # Determine the stop index.
             if slice_element.stop is None:
-                slice_stop = wcs._naxis[i] # wcs._naxis is a list of the length of each axis
+                slice_stop = wcs.pixel_shape[i] # wcs._pixel_shape is a list of the length of each axis
             else:
                 slice_stop = slice_element.stop
             # Determine the slice's step.  (We will use this is a later version of this code to be more thorough.  For now we'll calculate it and not use it.)
