@@ -201,8 +201,8 @@ def _wcs_slicer(wcs, missing_axis, item):
                 # Using len(missing_axis) instead of 1 to test code... 
                 item_checked.append(item[index])
                 # index += 1
-                else:
-                    item_checked.append(slice(None, None, None))
+                # else:
+                    # item_checked.append(slice(None, None, None))
             # else:
                 # item_checked.append(slice(0, 1))
         # if all are slices in the item tuple
