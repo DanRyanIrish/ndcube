@@ -156,7 +156,7 @@ def _wcs_slicer(wcs, missing_axis, item):
         # needs to be appended then it gets appended there.
         for i, _bool in enumerate(missing_axis):
             if not _bool:
-                if index is not len(missing_axis):  
+                if index is not 1:  
                     item_checked.append(item)
                     # item_checked.append(slice(0, 1))
                     missing_axis[i] = True
@@ -178,7 +178,7 @@ def _wcs_slicer(wcs, missing_axis, item):
         index = 0
         for i, _bool in enumerate(missing_axis):
             if not _bool:
-                if index is not len(missing_axis):  
+                if index is not 1:  
                     item_checked.append(slice(item, item + 1)) 
                     # item_checked.append(slice(0, 1))
                     missing_axis[i] = True
