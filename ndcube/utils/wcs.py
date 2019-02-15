@@ -149,41 +149,45 @@ def _wcs_slicer(wcs, missing_axis, item):
     # normal slice.
     item_checked = []
     if isinstance(item, slice):
-        # index = 0
-        # creating a new tuple of slice where if the axis is dead i.e missing
-        # then slice(0,1) added else slice(None, None, None) is appended and
+        index = 0
+        # Creating a new tuple of slice where if the axis is dead, i.e. missing,
+        # then slice(0,1) added, else slice(None, None, None) is appended; and,
         # if the check of missing_axis gives that this is the index where it
         # needs to be appended then it gets appended there.
         for i, _bool in enumerate(missing_axis):
             if not _bool:
-                #if index is not len(missing_axis):  
-                item_checked.append(item)
-                # index += 1
-                # else:
-                    # item_checked.append(slice(None, None, None))
+                if index is not i:  
+                    item_checked.append(item)
+                    # item_checked.append(slice(0, 1))
+                    missing_axis[i] = True
+                    index += 1
+                else:
+                    item_checked.append(slice(None, None, None))
+                    # item_checked.append(item)
             else:
                 item_checked.append(slice(0, 1))
         item_ = item_checked  # Removed brackets to test...
 
     # item is int then slicing axis.
     elif isinstance(item, int) or isinstance(item, np.int64):
-        # using index to keep track of whether the int(which is converted to
+        # Using index to keep track of whether the int(which is converted to
         # slice(int_value, int_value+1)) is already added or not. It checks
-        # the dead axis i.e missing_axis to check if it is dead than slice(0,1)
+        # the dead axis i.e. missing_axis to check if it is dead than slice(0,1)
         # is appended in it. if the index value has reached 1 then the
         # slice(None, None, None) is added.
-        # index = 0
+        index = 0
         for i, _bool in enumerate(missing_axis):
-            if _bool: 
+            if not _bool:
+                if index is not i:  
+                    item_checked.append(slice(item, item + 1)) 
+                    # item_checked.append(slice(0, 1))
+                    missing_axis[i] = True
+                    index += 1
+                else:
+                    item_checked.append(slice(None, None, None))
+            elif _bool: 
                 item_checked.append(slice(0, 1))
-            elif not _bool:
-                # if index is not len(missing_axis):  
-                # Using len(missing_axis) instead of 1 to test code...
-                item_checked.append(slice(item, item + 1)) 
-                missing_axis[i] = True
-                    #index +=1
-                # else:
-                    # item_checked.append(slice(None, None, None))
+                # item_checked.append(slice(item, item + 1))
         item_ = item_checked  # Removed brackets to fix bug in code block...
     # if it a tuple like (0:2, 0:3, 2) or (0:2, 1:3)
     elif isinstance(item, tuple):
@@ -194,17 +198,14 @@ def _wcs_slicer(wcs, missing_axis, item):
         # is appended.
         index = 0
         for i, _bool in enumerate(missing_axis):
-            if _bool: 
-                item_checked.append(slice(0, 1))
             if not _bool:
-                # if index is not len(missing_axis):
-                # Using len(missing_axis) instead of 1 to test code... 
-                item_checked.append(item[index])
-                # index += 1
-                # else:
-                    # item_checked.append(slice(None, None, None))
-            # else:
-                # item_checked.append(slice(0, 1))
+                if index is not i: 
+                    item_checked.append(item[i])
+                    index += 1
+                else:
+                    item_checked.append(slice(None, None, None))
+            elif _bool: 
+                item_checked.append(slice(0, 1))
         # if all are slices in the item tuple
         if _all_slice(item_checked):
             item_ = item_checked  # Removed brackets to test
