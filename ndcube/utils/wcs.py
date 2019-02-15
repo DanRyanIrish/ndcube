@@ -161,7 +161,7 @@ def _wcs_slicer(wcs, missing_axis, item):
                     index += 1
                 else:
                     item_checked.append(slice(None, None, None))
-            else:
+            elif _bool:  # Using explicit declaration of contition to test... 
                 item_checked.append(slice(0, 1))
         item_ = item_checked  # Removed brackets to test... 
 
