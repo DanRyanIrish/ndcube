@@ -201,6 +201,7 @@ def _wcs_slicer(wcs, missing_axis, item):
                         item_checked.append(slice(item[index], item[index]+1))
                     else:
                         item_checked.append(item[index])
+                    missing_axis[i] = True  # Added to try out effect...  
                     index += 1
                 # if index is not len(item): 
                     # item_checked.append(item[index])
