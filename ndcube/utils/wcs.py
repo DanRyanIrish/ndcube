@@ -199,8 +199,10 @@ def _wcs_slicer(wcs, missing_axis, item):
                 if index is not len(item):
                     if isinstance(item[index], (int, np.int64)):
                         item_checked.append(slice(item[index], item[index]+1))
+                        missing_axis[i] = True
                     else:
                         item_checked.append(item[index])
+                        missing_axis[i] = True
                     index += 1
                 # if index is not len(item): 
                     # item_checked.append(item[index])
@@ -216,7 +218,7 @@ def _wcs_slicer(wcs, missing_axis, item):
         else:
             # this will make all the item in item_checked as slice.
             item_ = _slice_list(item_checked)
-        for i, it in enumerate(item_checked):
+            for i, it in enumerate(item_checked):
                 if isinstance(it, int):
                     missing_axis[i] = True
     else:
