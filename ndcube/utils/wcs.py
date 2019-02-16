@@ -188,10 +188,10 @@ def _wcs_slicer(wcs, missing_axis, item):
         item_ = item_checked  # Removed brackets to fix bug in code block...
     # if it a tuple like (0:2, 0:3, 2) or (0:2, 1:3)
     elif isinstance(item, tuple):
-        # this is used to not exceed the range of the item tuple
+        # This is used to not exceed the range of the item tuple
         # if the check of the missing_axis which is False if not dead
         # is a success than the the item of the tuple is added one by
-        # one and if the end of tuple is reached than slice(None, None, None)
+        # one, and if the end of tuple is reached than slice(None, None, None)
         # is appended.
         index = 0
         for i, _bool in enumerate(missing_axis):
@@ -199,14 +199,9 @@ def _wcs_slicer(wcs, missing_axis, item):
                 if index is not len(item):
                     if isinstance(item[index], (int, np.int64)):
                         item_checked.append(slice(item[index], item[index]+1))
-                        missing_axis[i] = True
                     else:
                         item_checked.append(item[index])
-                        missing_axis[i] = True
                     index += 1
-                # if index is not len(item): 
-                    # item_checked.append(item[index])
-                    # index += 1
                 else:
                     item_checked.append(slice(None, None, None))
             elif _bool: 
