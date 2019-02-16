@@ -211,7 +211,10 @@ def _wcs_slicer(wcs, missing_axis, item):
                 item_checked.append(slice(0, 1))
         # if all are slices in the item tuple
         if _all_slice(item_checked):
-            item_ = (item_checked)  # Added brackets to test
+            item_ = (item_checked)
+            for i, it in enumerate(item_):
+                if isinstance(it, int):
+                    missing_axis[i] = True
         # if all are not slices some of them are int then
         else:
             # this will make all the item in item_checked as slice.
