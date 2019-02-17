@@ -158,7 +158,6 @@ def _wcs_slicer(wcs, missing_axis, item):
             if not _bool:
                 if index is not 1:  
                     item_checked.append(item)
-                    print(item_checked)
                     missing_axis[i] = True
                     index += 1
                 else:
@@ -166,7 +165,8 @@ def _wcs_slicer(wcs, missing_axis, item):
             else:
                 item_checked.append(slice(0, 1))
         item_ = (item_checked)  # Un-removed brackets to test...
-
+        print(item_)
+           
     # item is int then slicing axis.
     elif isinstance(item, int) or isinstance(item, np.int64):
         # Using index to keep track of whether the int(which is converted to
@@ -179,7 +179,6 @@ def _wcs_slicer(wcs, missing_axis, item):
             if not _bool:
                 if index is not 1:  
                     item_checked.append(slice(item, item+1))
-                    print(item_checked)
                     missing_axis[i] = True
                     index += 1
                 else:
@@ -187,6 +186,7 @@ def _wcs_slicer(wcs, missing_axis, item):
             elif _bool: 
                 item_checked.append(slice(0, 1))
         item_ = (item_checked)  # Un-removed brackets to fix bug in code block...
+        print(item_)
     # if it a tuple like (0:2, 0:3, 2) or (0:2, 1:3)
     elif isinstance(item, tuple):
         # This is used to not exceed the range of the item tuple
@@ -210,10 +210,12 @@ def _wcs_slicer(wcs, missing_axis, item):
         # if all are slices in the item tuple
         if _all_slice(item_checked):
             item_ = (item_checked)
+            print(item_)
         # if all are not slices some of them are int then
         else:
             # this will make all the item in item_checked as slice.
             item_ = _slice_list(item_checked)
+            print(item_)
             for i, it in enumerate(item_checked):
                 if isinstance(it, int):
                     missing_axis[i] = True
