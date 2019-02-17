@@ -158,6 +158,7 @@ def _wcs_slicer(wcs, missing_axis, item):
             if not _bool:
                 if index is not 1:  
                     item_checked.append(item)
+                    print(item_checked)
                     missing_axis[i] = True
                     index += 1
                 else:
@@ -178,6 +179,7 @@ def _wcs_slicer(wcs, missing_axis, item):
             if not _bool:
                 if index is not 1:  
                     item_checked.append(slice(item, item+1))
+                    print(item_checked)
                     missing_axis[i] = True
                     index += 1
                 else:
