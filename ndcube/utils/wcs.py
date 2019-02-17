@@ -246,7 +246,7 @@ def _wcs_slicer(wcs, missing_axis, item):
                 slice_step = 1
             else:
                 slice_step = slice_element.step
-            if slice_stop - slice_start == 1 and slice_start == 0:
+            if slice_stop - slice_start == 1:
             # proceed with rest of if statement...
             #if missing_axis[i] is False and (slice_element.stop - slice_element.start) == 1:
                 pix_coords = [0] * len(item_) # Setting up a list of pixel coords as input to all_pix2world.
