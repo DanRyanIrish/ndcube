@@ -168,7 +168,7 @@ def _wcs_slicer(wcs, missing_axis, item):
         item_ = (item_checked)  # Un-removed brackets to test...
         print(item_)
         missing_axis = list(missing_axis_tracker)
-           
+        print(missing_axis)
     # item is int then slicing axis.
     elif isinstance(item, int) or isinstance(item, np.int64):
         # Using index to keep track of whether the int(which is converted to
@@ -190,6 +190,7 @@ def _wcs_slicer(wcs, missing_axis, item):
         item_ = (item_checked)  # Un-removed brackets to fix bug in code block...
         print(item_)
         missing_axis = list(missing_axis_tracker)
+        print(missing_axis)
     # if it a tuple like (0:2, 0:3, 2) or (0:2, 1:3)
     elif isinstance(item, tuple):
         # This is used to not exceed the range of the item tuple
@@ -223,6 +224,7 @@ def _wcs_slicer(wcs, missing_axis, item):
                 if isinstance(it, int):
                     missing_axis_tracker[i] = True
             missing_axis = list(missing_axis_tracker)
+            print(missing_axis)
     else:
         raise TypeError("item type is {0}.  Must be int, slice, or tuple of ints and/or slices.".format(type(item)))
     # returning the reverse list of missing axis as in the item here was reverse of
