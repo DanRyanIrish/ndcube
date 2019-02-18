@@ -148,7 +148,6 @@ def _wcs_slicer(wcs, missing_axis, item):
     """
     # normal slice.
     item_checked = []
-    missing_axis_tracker = list(missing_axis)
     if isinstance(item, slice):
         index = 0
         # Creating a new tuple of slice where if the axis is dead, i.e. missing,
@@ -164,10 +163,7 @@ def _wcs_slicer(wcs, missing_axis, item):
                     item_checked.append(slice(None, None, None))
             else:
                 item_checked.append(slice(0, 1))
-        item_ = (item_checked)  # Un-removed brackets to test...
-        print(item_)
-        missing_axis = list(missing_axis_tracker)
-        print(missing_axis)
+        item_ = (item_checked)
     # item is int then slicing axis.
     elif isinstance(item, int) or isinstance(item, np.int64):
         # Using index to keep track of whether the int(which is converted to
@@ -180,16 +176,12 @@ def _wcs_slicer(wcs, missing_axis, item):
             if not _bool:
                 if index is not 1:  
                     item_checked.append(slice(item, item+1))
-                    # missing_axis_tracker[i] = True
                     index += 1
                 else:
                     item_checked.append(slice(None, None, None))
             elif _bool: 
                 item_checked.append(slice(0, 1))
-        item_ = (item_checked)  # Un-removed brackets to fix bug in code block...
-        print(item_)
-        missing_axis = list(missing_axis_tracker)
-        print(missing_axis)
+        item_ = (item_checked)
     # if it a tuple like (0:2, 0:3, 2) or (0:2, 1:3)
     elif isinstance(item, tuple):
         # This is used to not exceed the range of the item tuple
@@ -213,7 +205,6 @@ def _wcs_slicer(wcs, missing_axis, item):
         # if all are slices in the item tuple
         if _all_slice(item_checked):
             item_ = (item_checked)
-            print(item_)
         # if all are not slices some of them are int then
         else:
             # this will make all the item in item_checked as slice.
@@ -222,8 +213,6 @@ def _wcs_slicer(wcs, missing_axis, item):
             # for i, it in enumerate(item_checked):
                 # if isinstance(it, int):
                     # missing_axis_tracker[i] = True
-        missing_axis = list(missing_axis_tracker)
-        print(missing_axis)
     else:
         raise TypeError("item type is {0}.  Must be int, slice, or tuple of ints and/or slices.".format(type(item)))
     # returning the reverse list of missing axis as in the item here was reverse of
