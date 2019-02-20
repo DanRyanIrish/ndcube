@@ -210,48 +210,42 @@ def _wcs_slicer(wcs, missing_axis, item):
             # this will make all the item in item_checked as slice.
             item_ = _slice_list(item_checked)
             print(item_)
-            # for i, it in enumerate(item_checked):
-                # if isinstance(it, int):
-                    # missing_axis_tracker[i] = True
     else:
         raise TypeError("item type is {0}.  Must be int, slice, or tuple of ints and/or slices.".format(type(item)))
     # returning the reverse list of missing axis as in the item here was reverse of
     # what was inputed so we had a reverse missing_axis.
     dropped_coords = [] # Initiating new list to collect dropped coords in the process of slicing.
     
-    # Checking item_ slices for dropped axes if any
+    # Checking item_ slices for dropped axes if any.
     for i, slice_element in enumerate(item_):
         if missing_axis[i] is False:
-            # Determine the start index
+            # Determine the start index.
             if slice_element.start is None:
                 slice_start = 0
             else:
                 slice_start = slice_element.start
             # Determine the stop index.
             if slice_element.stop is None:
-                slice_stop = wcs.pixel_shape[i] # wcs._pixel_shape is a list of the length of each axis
+                slice_stop = wcs.pixel_shape[i]  # wcs._pixel_shape is a list of the length of each axis. 
             else:
                 slice_stop = slice_element.stop
-            # Determine the slice's step.  (We will use this is a later version of this code to be more thorough.  For now we'll calculate it and not use it.)
+            # Determine the slice's step.
+            # (We will use this is a later version of this code to be more thorough.  For now we'll calculate it and not use it.)
             if slice_element.step is None:
                 slice_step = 1
             else:
                 slice_step = slice_element.step
             if slice_stop - slice_start == 1:
-            # proceed with rest of if statement...
-            #if missing_axis[i] is False and (slice_element.stop - slice_element.start) == 1:
-                pix_coords = [0] * len(item_) # Setting up a list of pixel coords as input to all_pix2world.
-                pix_coords[i] = slice_element.start # Enter pixel coordinate for this axis. 
+                pix_coords = [0] * len(item_)  # Setting up a list of pixel coords as input to all_pix2world.
+                pix_coords[i] = slice_element.start  # Enter pixel coordinate for this axis.
                 # Since we are only dealing with independent axes the other axes can remain at 0.
                 real_world_coords = wcs.all_pix2world(*pix_coords, 0)[i]
                 # Unravel the arguments in the pix_coords array using the * prefix.
-                # Added in index to obtain the i-th element in the resultant real world coords list of arrays. 
-                axis_name = wcs_ivoa_mapping[wcs.wcs.ctype[i]] 
-                # Added an index to get the axis name for the i-th element of wcs's ctype list.   
-                # CTYPE name now mapped to its IVOA counterpart
+                # Added in index to obtain the i-th element in the resultant real world coords list of arrays.
+                axis_name = wcs_ivoa_mapping[wcs.wcs.ctype[i]]
+                # Added an index to get the axis name for the i-th element of wcs's ctype list.
+                # CTYPE name now mapped to its IVOA counterpart.
                 dropped_coords.append((axis_name, None, real_world_coords)) 
-                # The dropped_coords list of tuples with 3 elements to collect extra coordinates resulted in slicing
-                # now complete. 
                 # The dropped_coords's first variable is the IVOA axis name corresponding to the CTYPE.
                 missing_axis[i] = True
     new_wcs = wcs.slice(item_)
