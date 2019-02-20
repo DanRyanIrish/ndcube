@@ -42,9 +42,10 @@ class NDCubeSlicingMixin(NDSlicingMixin):
         """
         kwargs = super()._slice(item)
 
-        wcs, missing_axis = self._slice_wcs_missing_axis(item)
+        wcs, missing_axis, dropped_coords = self._slice_wcs_missing_axis(item)
         kwargs['wcs'] = wcs
         kwargs['missing_axis'] = missing_axis
+        # kwargs['dropped_coords'] = dropped_coords  # Is this needed? Reckon not.
         kwargs['extra_coords'] = self._slice_extra_coords(item, missing_axis)
 
         return kwargs
@@ -53,7 +54,7 @@ class NDCubeSlicingMixin(NDSlicingMixin):
         # here missing axis is reversed as the item comes already in the reverse order
         # of the input
         return utils.wcs._wcs_slicer(
-            self.wcs, copy.deepcopy(self.missing_axis[::-1]), item)
+            self.wcs, copy.deepcopy(self.missing_axis[::-1]), item, dropped_coords)
 
     def _slice_extra_coords(self, item, missing_axis):
         if self.extra_coords is None:
