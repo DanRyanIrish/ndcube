@@ -219,7 +219,7 @@ def _wcs_slicer(wcs, missing_axis, item):
     dropped_coords = [] # Initiating new list to collect dropped coords in the process of slicing.
     
     # Checking item_ slices for dropped axes if any.
-    for i, slice_element in reversed(list(enumerate(item_))):
+    for i, slice_element in enumerate(item_):
         if missing_axis[i] is False:
             # Determine the start index.
             if slice_element.start is None:
