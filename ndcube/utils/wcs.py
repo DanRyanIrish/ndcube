@@ -156,7 +156,7 @@ def _wcs_slicer(wcs, missing_axis, item):
         # then slice(0,1) added, else slice(None, None, None) is appended; and,
         # if the check of missing_axis gives that this is the index where it
         # needs to be appended then it gets appended there.
-        for i, _bool in reversed(list(enumerate(missing_axis))):
+        for i, _bool in enumerate(missing_axis):
             if not _bool:
                 if index is not 1:  
                     item_checked.append(item_wcs_order)
@@ -174,7 +174,7 @@ def _wcs_slicer(wcs, missing_axis, item):
         # is appended in it. if the index value has reached 1 then the
         # slice(None, None, None) is added.
         index = 0
-        for i, _bool in reversed(list(enumerate(missing_axis))):
+        for i, _bool in enumerate(missing_axis):
             if not _bool:
                 if index is not 1:
                     item_checked.append(slice(item_wcs_order, item_wcs_order + 1))
@@ -192,7 +192,7 @@ def _wcs_slicer(wcs, missing_axis, item):
         # one, and if the end of tuple is reached than slice(None, None, None)
         # is appended.
         index = 0
-        for i, _bool in reversed(list(enumerate(missing_axis))):
+        for i, _bool in enumerate(missing_axis):
             if not _bool:
                 if index is not len(item_wcs_order):
                     if isinstance(item_wcs_order[index], (int, np.int64)):
