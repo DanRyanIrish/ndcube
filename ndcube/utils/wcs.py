@@ -156,7 +156,7 @@ def _wcs_slicer(wcs, missing_axis, item):
         # then slice(0,1) added, else slice(None, None, None) is appended; and,
         # if the check of missing_axis gives that this is the index where it
         # needs to be appended then it gets appended there.
-        for i, _bool in enumerate(missing_axis):
+        for i, _bool in reversed(list(enumerate(reversed(missing_axis)))):
             if not _bool:
                 if index is not 1:  
                     item_checked.append(item)
@@ -174,9 +174,9 @@ def _wcs_slicer(wcs, missing_axis, item):
         # is appended in it. if the index value has reached 1 then the
         # slice(None, None, None) is added.
         index = 0
-        for i, _bool in enumerate(missing_axis):
+        for i, _bool in reversed(list(enumerate(reversed(missing_axis)))):
             if not _bool:
-                if index is not 1:  
+                if index is not 1:
                     item_checked.append(slice(item, item+1))
                     index += 1
                 else:
@@ -192,7 +192,7 @@ def _wcs_slicer(wcs, missing_axis, item):
         # one, and if the end of tuple is reached than slice(None, None, None)
         # is appended.
         index = 0
-        for i, _bool in enumerate(missing_axis):
+        for i, _bool in reversed(list(enumerate(reversed(missing_axis)))):
             if not _bool:
                 if index is not len(item):
                     if isinstance(item[index], (int, np.int64)):
@@ -251,7 +251,7 @@ def _wcs_slicer(wcs, missing_axis, item):
                 # The dropped_coords's first variable is the IVOA axis name corresponding to the CTYPE.
                 missing_axis[i] = True
     new_wcs = wcs.slice(item_)
-    return new_wcs, missing_axis[::-1], tuple(reversed(dropped_coords))
+    return new_wcs, missing_axis[::-1], dropped_coords
 
 
 def _all_slice(obj):
