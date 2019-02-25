@@ -217,8 +217,9 @@ def _wcs_slicer(wcs, missing_axis, item):
     # what was inputed so we had a reverse missing_axis.
     dropped_coords = [] # Initiating new list to collect dropped coords in the process of slicing.
     # Checking item_ slices for dropped axes if any.
-    for i, slice_element in reversed(list(enumerate(item_))):
-        if missing_axis[i] is False:
+    missing_axis_reversed = missing_axis[::-1]
+    for i, slice_element in enumerate(item_):
+        if missing_axis_reversed[i] is False:
             # Determine the start index.
             if slice_element.start is None:
                 slice_start = 0
@@ -247,9 +248,9 @@ def _wcs_slicer(wcs, missing_axis, item):
                 # CTYPE name now mapped to its IVOA counterpart.
                 dropped_coords.append((axis_name, None, real_world_coords)) 
                 # The dropped_coords's first variable is the IVOA axis name corresponding to the CTYPE.
-                missing_axis[i] = True
+                missing_axis_reversed[i] = True
     new_wcs = wcs.slice(item_)
-    return new_wcs, missing_axis[::-1], dropped_coords
+    return new_wcs, missing_axis_reversed, dropped_coords
 
 
 def _all_slice(obj):
