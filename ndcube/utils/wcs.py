@@ -250,7 +250,7 @@ def _wcs_slicer(wcs, missing_axis, item):
                 # The dropped_coords's first variable is the IVOA axis name corresponding to the CTYPE.
                 missing_axis[i] = True
     new_wcs = wcs.slice(item_[::-1])
-    return new_wcs, missing_axis[::-1], dropped_coords
+    return new_wcs, missing_axis, dropped_coords
 
 
 def _all_slice(obj):
