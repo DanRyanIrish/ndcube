@@ -129,8 +129,9 @@ def _wcs_slicer(wcs, missing_axis, item):
         Indicates which axes of the WCS are "missing", i.e. do not correspond to a data axis.
 
     item: `int`, `slice` or `tuple` of `int` and/or `slice`.
-        Slicing item.  Note that unlike in other places in this package, the item has the
-        same axis ordering as the WCS object, i.e. the reverse of the data order.
+        Slicing item.  Note that as in the other places in the package, the item has a different
+        axis ordering as the WCS object, i.e. it is entered in the usual reversed order.
+        Therefore, `item` must be entered in "numpy_order".
 
     Returns
     -------
@@ -146,6 +147,7 @@ def _wcs_slicer(wcs, missing_axis, item):
         `dropped_coords`. 
 
     """
+    item_wcs_order = item[::-1]
     # normal slice.
     item_checked = []
     if isinstance(item, slice):
@@ -249,7 +251,7 @@ def _wcs_slicer(wcs, missing_axis, item):
                 # The dropped_coords's first variable is the IVOA axis name corresponding to the CTYPE.
                 missing_axis[i] = True
     new_wcs = wcs.slice(item_)
-    return new_wcs, missing_axis[::-1], dropped_coords
+    return new_wcs, missing_axis[::-1], tuple(reversed(dropped_coords))
 
 
 def _all_slice(obj):
