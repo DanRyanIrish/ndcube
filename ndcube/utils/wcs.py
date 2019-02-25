@@ -147,7 +147,6 @@ def _wcs_slicer(wcs, missing_axis, item):
         `dropped_coords`. 
 
     """
-    item_wcs_order = item[::-1]
     # normal slice.
     item_checked = []
     if isinstance(item, slice):
@@ -215,7 +214,6 @@ def _wcs_slicer(wcs, missing_axis, item):
         raise TypeError("item type is {0}.  Must be int, slice, or tuple of ints and/or slices.".format(type(item)))
     # returning the reverse list of missing axis as in the item here was reverse of
     # what was inputed so we had a reverse missing_axis.
-    print(item_)
     dropped_coords = [] # Initiating new list to collect dropped coords in the process of slicing.
     # Checking item_ slices for dropped axes if any.
     for i, slice_element in enumerate(item_):
