@@ -150,7 +150,7 @@ def _wcs_slicer(wcs, missing_axis, item):
     item_wcs_order = item[::-1]
     # normal slice.
     item_checked = []
-    if isinstance(item, slice):
+    if isinstance(item_wcs_order, slice):
         index = 0
         # Creating a new tuple of slice where if the axis is dead, i.e. missing,
         # then slice(0,1) added, else slice(None, None, None) is appended; and,
@@ -159,7 +159,7 @@ def _wcs_slicer(wcs, missing_axis, item):
         for i, _bool in reversed(list(enumerate(reversed(missing_axis)))):
             if not _bool:
                 if index is not 1:  
-                    item_checked.append(item)
+                    item_checked.append(item_wcs_order)
                     index += 1
                 else:
                     item_checked.append(slice(None, None, None))
@@ -167,7 +167,7 @@ def _wcs_slicer(wcs, missing_axis, item):
                 item_checked.append(slice(0, 1))
         item_ = (item_checked)
     # item is int then slicing axis.
-    elif isinstance(item, int) or isinstance(item, np.int64):
+    elif isinstance(item_wcs_order, int) or isinstance(item_wcs_order, np.int64):
         # Using index to keep track of whether the int(which is converted to
         # slice(int_value, int_value+1)) is already added or not. It checks
         # the dead axis i.e. missing_axis to check if it is dead than slice(0,1)
@@ -177,7 +177,7 @@ def _wcs_slicer(wcs, missing_axis, item):
         for i, _bool in reversed(list(enumerate(reversed(missing_axis)))):
             if not _bool:
                 if index is not 1:
-                    item_checked.append(slice(item, item+1))
+                    item_checked.append(slice(item_wcs_order, item_wcs_order + 1))
                     index += 1
                 else:
                     item_checked.append(slice(None, None, None))
@@ -185,7 +185,7 @@ def _wcs_slicer(wcs, missing_axis, item):
                 item_checked.append(slice(0, 1))
         item_ = (item_checked)
     # if it a tuple like (0:2, 0:3, 2) or (0:2, 1:3)
-    elif isinstance(item, tuple):
+    elif isinstance(item_wcs_order, tuple):
         # This is used to not exceed the range of the item tuple
         # if the check of the missing_axis which is False if not dead
         # is a success than the the item of the tuple is added one by
@@ -194,11 +194,11 @@ def _wcs_slicer(wcs, missing_axis, item):
         index = 0
         for i, _bool in reversed(list(enumerate(reversed(missing_axis)))):
             if not _bool:
-                if index is not len(item):
-                    if isinstance(item[index], (int, np.int64)):
-                        item_checked.append(slice(item[index], item[index]+1))
+                if index is not len(item_wcs_order):
+                    if isinstance(item_wcs_order[index], (int, np.int64)):
+                        item_checked.append(slice(item_wcs_order[index], item_wcs_order[index]+1))
                     else:
-                        item_checked.append(item[index])
+                        item_checked.append(item_wcs_order[index])
                     index += 1
                 else:
                     item_checked.append(slice(None, None, None))
@@ -217,7 +217,6 @@ def _wcs_slicer(wcs, missing_axis, item):
     # returning the reverse list of missing axis as in the item here was reverse of
     # what was inputed so we had a reverse missing_axis.
     dropped_coords = [] # Initiating new list to collect dropped coords in the process of slicing.
-    
     # Checking item_ slices for dropped axes if any.
     for i, slice_element in enumerate(item_):
         if missing_axis[i] is False:
