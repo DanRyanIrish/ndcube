@@ -128,10 +128,10 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
     missing_axis: `list` of `bool`
         Indicates which axes of the WCS are "missing", i.e. do not correspond to a data axis.
 
-    item: `int`, `slice` or `tuple` of `int` and/or `slice`
-        Slicing item.  Note that as in the other places in the package, the item has a different
-        axis ordering as the WCS object, i.e. it is entered in the usual reversed order.
-        Therefore, `item` must be entered in "numpy_order", such that `numpy_order = True`. 
+    item: `int`, `slice` or `tuple` of `int` and/or `slice`.
+        Slicing item.  If numpy_order=True, the axes must be in a reversed order to those in the wcs input.
+        If numpy_order=False, the axes must be entered in the same order as those in the wcs input.
+
         
     numpy_order: bool
         If True, it indicates that the axes in the item parameter are in the reversed order
