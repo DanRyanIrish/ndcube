@@ -131,7 +131,7 @@ def _wcs_slicer(wcs, missing_axis, item):
     item: `int`, `slice` or `tuple` of `int` and/or `slice`.
         Slicing item.  Note that as in the other places in the package, the item has a different
         axis ordering as the WCS object, i.e. it is entered in the usual reversed order.
-        Therefore, `item` must be entered in "numpy_order".
+        Therefore, `item` must be entered in "numpy_order", such that `numpy_order = True`. 
 
     Returns
     -------
@@ -140,7 +140,7 @@ def _wcs_slicer(wcs, missing_axis, item):
 
     missing_axis: `list` of `bool`
         Altered missing axis list.  Note the ordering has been reversed to reflect the data
-        (numpy) axis ordering convention.
+        (numpy) axis ordering convention. 
         
     dropped_coords:
         Coordinates which have been dropped in the slicing process is collected in a tuple called
