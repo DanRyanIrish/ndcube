@@ -255,6 +255,8 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
                 dropped_coords.append((axis_name, i, real_world_coords))
                 # The dropped_coords's first variable is the IVOA axis name corresponding to the CTYPE.
                 missing_axis[i] = True
+    # Use item_ to slice WCS. As item order is always forced to be in WCS order at the start of this function,
+    # numpy_order here should always be False.
     new_wcs = wcs.slice(item_, numpy_order=False)
     return new_wcs, missing_axis, dropped_coords
 
