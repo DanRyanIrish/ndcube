@@ -252,7 +252,7 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
                 axis_name = wcs_ivoa_mapping[wcs.wcs.ctype[i]]
                 # Added an index to get the axis name for the i-th element of wcs's ctype list.
                 # CTYPE name now mapped to its IVOA counterpart.
-                dropped_coords.append((axis_name, None, real_world_coords)) 
+                dropped_coords.append((axis_name, i, real_world_coords))
                 # The dropped_coords's first variable is the IVOA axis name corresponding to the CTYPE.
                 missing_axis[i] = True
     new_wcs = wcs.slice(item_, numpy_order=False)
