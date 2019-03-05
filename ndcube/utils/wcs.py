@@ -147,6 +147,9 @@ def _wcs_slicer(wcs, missing_axis, item):
         `dropped_coords`. 
 
     """
+    # Check ordering. 
+    if numpy_order is True:
+        item = item[::-1]
     # normal slice.
     item_checked = []
     if isinstance(item, slice):
