@@ -49,7 +49,10 @@ class NDCubeSlicingMixin(NDSlicingMixin):
         if temp_extra_coords is not None:
             kwargs['extra_coords'] = list(temp_extra_coords) + list(dropped_coords)
         else: 
-            kwargs['extra_coords'] = list(dropped_coords)
+            if len(dropped_coords) != 0:
+                kwargs['extra_coords'] = list(dropped_coords)
+            else:
+                kwargs['extra_coords'] is None
 
         return kwargs
 
