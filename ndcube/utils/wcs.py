@@ -132,7 +132,6 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
         Slicing item.  If numpy_order=True, the axes must be in a reversed order to those in the wcs input.
         If numpy_order=False, the axes must be entered in the same order as those in the wcs input.
 
-        
     numpy_order: bool
         If True, it indicates that the axes in the item parameter are in the reversed order
         to those in the wcs input, i.e. item is in numpy order. If False, the axes in item have
