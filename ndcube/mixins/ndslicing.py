@@ -45,7 +45,7 @@ class NDCubeSlicingMixin(NDSlicingMixin):
         wcs, missing_axis, dropped_coords = self._slice_wcs_missing_axis(item)
         kwargs['wcs'] = wcs
         kwargs['missing_axis'] = missing_axis
-        kwargs['extra_coords'] = self._slice_extra_coords(item, missing_axis) + dropped_coords
+        kwargs['extra_coords'] = self._slice_extra_coords(item, missing_axis).extend(dropped_coords)
 
         return kwargs
 
