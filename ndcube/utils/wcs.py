@@ -172,7 +172,7 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
         # needs to be appended then it gets appended there.
         for i, _bool in enumerate(missing_axis):
             if not _bool:
-                if index is not 1:  
+                if index is not 1:
                     item_checked.append(item)
                     index += 1
                 else:
@@ -195,7 +195,7 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
                     index += 1
                 else:
                     item_checked.append(slice(None, None, None))
-            else: 
+            else:
                 item_checked.append(slice(0, 1))
         item_ = (item_checked)
     # if it a tuple like (0:2, 0:3, 2) or (0:2, 1:3)
@@ -216,7 +216,7 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
                     index += 1
                 else:
                     item_checked.append(slice(None, None, None))
-            else: 
+            else:
                 item_checked.append(slice(0, 1))
         # if all are slices in the item tuple
         if _all_slice(item_checked):
