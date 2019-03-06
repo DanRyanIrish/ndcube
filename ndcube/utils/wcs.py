@@ -153,7 +153,7 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
 
     """
     # Force item to be WCS order if entered by user in numpy order.
-    if numpy_order is True:
+    if numpy_order is False:
         # Convert item to a tuple is not already so we can handle it in a common way.
         if isinstance(item, (int, np.int64, slice)):
             item = (item)
