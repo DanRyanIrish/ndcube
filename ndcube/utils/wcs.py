@@ -152,8 +152,15 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
         `dropped_coords`. 
 
     """
-    # Check ordering. 
+    # Force item to be WCS order if entered by user in numpy order.
     if numpy_order is True:
+        # Convert item to a tuple is not already so we can handle it in a common way.
+        if isinstance(item, (int, np.int64, slice)):
+            item = (item)
+        # If item does not contain entries for all data axes, add empty slices for those axes.
+        n_add_axes = sum(np.invert(missing_axis)) - len(item)
+        item = tuple(list(item) + [slice(None)]*n_add_axes)
+        # Reverse order of item to be in WCS order.
         item = item[::-1]
     # normal slice.
     item_checked = []
