@@ -47,9 +47,10 @@ class NDCubeSlicingMixin(NDSlicingMixin):
         kwargs['missing_axis'] = missing_axis
         temp_extra_coords = self._slice_extra_coords(item, missing_axis)
         if temp_extra_coords is not None:
-            kwargs['extra_coords'] = list(temp_extra_coords) + list(dropped_coords)
+            if len(list(dropped_coords)) > 0:
+                kwargs['extra_coords'] = list(temp_extra_coords) + list(dropped_coords)
         else: 
-            if len(dropped_coords) != 0:
+            if len(list(dropped_coords)) > 0:
                 kwargs['extra_coords'] = list(dropped_coords)
             else:
                 kwargs['extra_coords'] = None
