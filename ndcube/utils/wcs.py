@@ -228,7 +228,7 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
         raise TypeError("item type is {0}.  Must be int, slice, or tuple of ints and/or slices.".format(type(item)))
     # returning the reverse list of missing axis as in the item here was reverse of
     # what was inputed so we had a reverse missing_axis.
-    dropped_coords = [] # Initiating new list to collect dropped coords in the process of slicing.
+    dropped_coords = {} # Initiating new list to collect dropped coords in the process of slicing.
     # Checking item_ slices for dropped axes if any.
     for i, slice_element in enumerate(item_):
         if missing_axis[i] is False:
@@ -258,7 +258,7 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
                 axis_name = wcs_ivoa_mapping[wcs.wcs.ctype[i]]
                 # Added an index to get the axis name for the i-th element of wcs's ctype list.
                 # CTYPE name now mapped to its IVOA counterpart.
-                dropped_coords.append((axis_name, i, real_world_coords))
+                dropped_coords[axis_name] = {"wcs axis": i, "value": real_world_coords}
                 # The dropped_coords's first variable is the IVOA axis name corresponding to the CTYPE.
                 missing_axis[i] = True
     # Use item_ to slice WCS. As item order is always forced to be in WCS order at the start of this function,
