@@ -43,8 +43,8 @@ class NDCubeSlicingMixin(NDSlicingMixin):
         if new_cube._extra_coords_wcs_axis is not None:
             if dropped_coords != {}:
                 new_cube._extra_coords_wcs_axis.update(dropped_coords)
-            else:
-                pass  # Add like a placeholder...
+        else:
+            new_cube._extra_coords_wcs_axis = dropped_coords
         
 >>>>>>> b20bc8302... Add if statements to ndslicing.py to debug
 
