@@ -148,7 +148,7 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
         (numpy) axis ordering convention. 
         
     dropped_coords:
-        Coordinates which have been dropped in the slicing process is collected in a tuple called
+        Coordinates which have been dropped in the slicing process is collected in a dictionary called
         `dropped_coords`. 
 
     """
