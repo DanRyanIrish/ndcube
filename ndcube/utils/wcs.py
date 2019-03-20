@@ -115,7 +115,6 @@ class WCS(wcs.WCS):
             newheader['CTYPE' + axis] = projection
         return newheader
 
-
 def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
     """
     Returns the new sliced wcs and changed missing axis.
@@ -270,6 +269,17 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
     new_wcs = wcs.slice(item_, numpy_order=False)
     return new_wcs, missing_axis, dropped_coords
 
+def _find_keys_in_wcs_ivoa_mapping(missing_axis):
+    """
+        Find keys in wcs_ivoa_mapping dict that represent start of CTYPE.
+        Ensure CTYPE is capitalized.
+        
+        """
+    ctype = list(wcs.wcs.ctype)
+    for i, axis in enumerate(missing_axis):
+        if not axis:
+            keys = list(filter(lambda key: ctype[i].upper().startswith(key), wcs_ivoa_mapping))
+    return keys
 
 def _all_slice(obj):
     """
