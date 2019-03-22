@@ -259,7 +259,8 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
                 # Get real world coordinates of i-th axis.
                 real_world_coords = wcs.all_pix2world(*pix_coords, 0)[i]
                 # Get IVOA axis name from CTYPE.
-                axis_name = wcs_ivoa_mapping[wcs.wcs.ctype[i]]
+                # axis_name = wcs_ivoa_mapping[wcs.wcs.ctype[i]]
+                axis_name = _wcs_ivoa_mapping_func(wcs.wcs.ctype[i])
                 # Add dropped coordinate's name, axis and value to dropped_coords dict of dicts.
                 dropped_coords[axis_name] = {"wcs axis": i, "value": real_world_coords}
                 missing_axis[i] = True
@@ -269,17 +270,22 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
     new_wcs = wcs.slice(item_, numpy_order=False)
     return new_wcs, missing_axis, dropped_coords
 
-def _find_keys_in_wcs_ivoa_mapping(missing_axis):
+def _wcs_ivoa_mapping_func(ctype_element):
     """
-        Find keys in wcs_ivoa_mapping dict that represent start of CTYPE.
-        Ensure CTYPE is capitalized.
+    Find keys in wcs_ivoa_mapping dict that represent start of CTYPE.
+    Ensure CTYPE is capitalized.
         
-        """
-    ctype = list(wcs.wcs.ctype)
-    for i, axis in enumerate(missing_axis):
-        if not axis:
-            keys = list(filter(lambda key: ctype[i].upper().startswith(key), wcs_ivoa_mapping))
-    return keys
+    """
+    keys = list(filter(lambda key: ctype_element.upper().startswith(key), wcs_ivoa_mapping))
+    # If there are multiple valid keys, raise an error.
+    if len(keys) != 1:
+        raise ValueError("Non-unique CTYPE key.  Please raise an issue at "
+                         "https://github.com/sunpy/ndcube/issues citing the"
+                         "following  CTYPE and non-unique keys: "
+                         "CTYPE = {0}; keys = {1}".format(ctype[i], keys))
+    else:
+        key = keys[0]
+    return key
 
 def _all_slice(obj):
     """
