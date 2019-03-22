@@ -12,7 +12,7 @@ from astropy import wcs
 from astropy.wcs._wcs import InconsistentAxisTypesError
 
 from ndcube.utils import cube as utils_cube
-from ndcube.utils import wcs as utils_wcs
+# from ndcube.utils import wcs as utils_wcs
 
 __all__ = ['WCS', 'reindex_wcs', 'wcs_ivoa_mapping', 'get_dependent_data_axes',
            'get_dependent_data_axes', 'axis_correlation_matrix',
@@ -115,6 +115,7 @@ class WCS(wcs.WCS):
             newheader['CTYPE' + axis] = projection
         return newheader
 
+
 def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
     """
     Returns the new sliced wcs and changed missing axis.
@@ -144,11 +145,11 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
 
     missing_axis: `list` of `bool`
         Altered missing axis list.  Note the ordering has been reversed to reflect the data
-        (numpy) axis ordering convention. 
-        
+        (numpy) axis ordering convention.
+
     dropped_coords:
-        Coordinates which have been dropped in the slicing process is collected in a dictionary called
-        `dropped_coords`. 
+        Coordinates which have been dropped in the slicing process is collected
+        in a dictionary called `dropped_coords`.
 
     """
     # Force item to be WCS order if entered by user in numpy order.
@@ -171,7 +172,7 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
         # needs to be appended then it gets appended there.
         for i, _bool in enumerate(missing_axis):
             if not _bool:
-                if index is not 1:
+                if index != 1:
                     item_checked.append(item)
                     index += 1
                 else:
@@ -189,7 +190,7 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
         index = 0
         for i, _bool in enumerate(missing_axis):
             if not _bool:
-                if index is not 1:
+                if index != 1:
                     item_checked.append(slice(item, item + 1))
                     index += 1
                 else:
@@ -225,11 +226,11 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
             # this will make all the item in item_checked as slice.
             item_ = _slice_list(item_checked)
     else:
-        raise TypeError("item type is {0}.  ".format(type(item)) + \
+        raise TypeError("item type is {0}.  ".format(type(item)) +
                         "Must be int, slice, or tuple of ints and/or slices.")
     # returning the reverse list of missing axis as in the item here was reverse of
     # what was inputed so we had a reverse missing_axis.
-    dropped_coords = {} # Initiating new list to collect dropped coords in the process of slicing.
+    dropped_coords = {}  # Initiating new list to collect dropped coords in the process of slicing.
     # Checking item_ slices for dropped axes if any.
     for i, slice_element in enumerate(item_):
         if missing_axis[i] is False:
@@ -247,10 +248,10 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
             # Determine the slice's step.
             # (We will use this is a later version of this code to be more thorough.
             # For now we'll calculate it and not use it.)
-            if slice_element.step is None:
-                slice_step = 1
-            else:
-                slice_step = slice_element.step
+            # if slice_element.step is None:
+                # slice_step = 1
+            # else:
+                # slice_step = slice_element.step
             if slice_stop - slice_start == 1:
                 # Set up a list of pixel coords as input to all_pix2world.
                 pix_coords = [0] * len(item_)
@@ -270,22 +271,21 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
     new_wcs = wcs.slice(item_, numpy_order=False)
     return new_wcs, missing_axis, dropped_coords
 
+
 def _wcs_ivoa_mapping_func(ctype_element):
     """
     Find keys in wcs_ivoa_mapping dict that represent start of CTYPE.
     Ensure CTYPE is capitalized.
-        
+
     """
     keys = list(filter(lambda key: ctype_element.upper().startswith(key), wcs_ivoa_mapping))
     # If there are multiple valid keys, raise an error.
     if len(keys) != 1:
-        raise ValueError("Non-unique CTYPE key.  Please raise an issue at "
-                         "https://github.com/sunpy/ndcube/issues citing the"
-                         "following  CTYPE and non-unique keys: "
-                         "CTYPE = {0}; keys = {1}".format(ctype[i], keys))
+        raise ValueError("Non-unique CTYPE key.")
     else:
         key = keys[0]
     return key
+
 
 def _all_slice(obj):
     """
