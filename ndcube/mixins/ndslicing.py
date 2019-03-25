@@ -37,7 +37,16 @@ class NDCubeSlicingMixin(NDSlicingMixin):
         new_cube = self.__class__(**kwargs)
 
         # Add any WCS coords whose axes are missing after slicing to extra_coords.
+<<<<<<< HEAD
         new_cube._extra_coords_wcs_axis.update(dropped_coords)
+=======
+        if new_cube._extra_coords_wcs_axis is not None:
+            if dropped_coords != {}:
+                new_cube._extra_coords_wcs_axis.update(dropped_coords)
+            else:
+                pass  # Add like a placeholder...
+        
+>>>>>>> b20bc8302... Add if statements to ndslicing.py to debug
 
         return new_cube
 
