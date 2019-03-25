@@ -261,7 +261,7 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
                 real_world_coords = wcs.all_pix2world(*pix_coords, 0)[i]
                 # Get IVOA axis name from CTYPE.
                 # axis_name = wcs_ivoa_mapping[wcs.wcs.ctype[i]]
-                axis_name = _wcs_ivoa_mapping_func(wcs.wcs.ctype[i])
+                axis_name = _get_ivoa_from_ctype(wcs.wcs.ctype[i])
                 # Add dropped coordinate's name, axis and value to dropped_coords dict of dicts.
                 dropped_coords[axis_name] = {"wcs axis": i, "value": real_world_coords}
                 missing_axis[i] = True
@@ -272,19 +272,19 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
     return new_wcs, missing_axis, dropped_coords
 
 
-def _wcs_ivoa_mapping_func(ctype_element):
+def _get_ivoa_from_ctype(ctype):
     """
     Find keys in wcs_ivoa_mapping dict that represent start of CTYPE.
     Ensure CTYPE is capitalized.
 
     """
-    keys = list(filter(lambda key: ctype_element.upper().startswith(key), wcs_ivoa_mapping))
+    keys = list(filter(lambda key: ctype.upper().startswith(key), wcs_ivoa_mapping))
     # If there are multiple valid keys, raise an error.
     if len(keys) != 1:
         raise ValueError("Non-unique CTYPE key.")
     else:
         key = keys[0]
-    return key
+    return wcs_ivoa_mapping[key]
 
 
 def _all_slice(obj):
