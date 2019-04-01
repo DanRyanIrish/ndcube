@@ -10,6 +10,7 @@ from collections import UserDict
 import numpy as np
 from astropy import wcs
 from astropy.wcs._wcs import InconsistentAxisTypesError
+from astropy.units import Quantity
 
 from ndcube.utils import cube as utils_cube
 # from ndcube.utils import wcs as utils_wcs
@@ -252,15 +253,16 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
                 # slice_step = 1
             # else:
                 # slice_step = slice_element.step
+            real_world_coords = []
             if slice_stop - slice_start == 1:
                 # Set up a list of pixel coords as input to all_pix2world.
                 pix_coords = [0] * len(item_)
                 # Enter pixel coordinate for this axis.
                 pix_coords[i] = slice_element.start
                 # Get real world coordinates of i-th axis.
-                real_world_coords = wcs.all_pix2world(*pix_coords, 0)[i]
+                temp_real_world_coords = wcs.all_pix2world(*pix_coords, 0)[i]
                 # Get IVOA axis name from CTYPE.
-                # axis_name = wcs_ivoa_mapping[wcs.wcs.ctype[i]]
+                real_world_coords = Quantity(temp_real_world_coords, unit=wcs.wcs.cunit[i])
                 axis_name = _get_ivoa_from_ctype(wcs.wcs.ctype[i])
                 # Add dropped coordinate's name, axis and value to dropped_coords dict of dicts.
                 dropped_coords[axis_name] = {"wcs axis": i, "value": real_world_coords}
