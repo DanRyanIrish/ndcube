@@ -5,6 +5,7 @@ Utilities for ndcube.
 """
 
 import numpy as np
+import collections
 
 __all__ = ['wcs_axis_to_data_axis', 'data_axis_to_wcs_axis', 'select_order',
            'convert_extra_coords_dict_to_input_format', 'get_axis_number_from_axis_name']
@@ -92,9 +93,12 @@ def _format_input_extra_coords_to_extra_coords_wcs_axis(extra_coords, missing_ax
         # of coord is same is data axis to which is corresponds.
         if coord[1] is not None:
             if not missing_axis[::-1][coord[1]]:
-                if len(coord[2]) != data_shape[coord[1]]:
-                    raise ValueError(coord_len_error.format(coord[0], len(coord[2]),
-                                                            data_shape[coord[1]]))
+                if isinstance(coord[2], list):
+                    if len(coord[2]) != data_shape[coord[1]]:
+                        raise ValueError(coord_len_error.format(coord[0], len(coord[2]), data_shape[coord[1]]))
+                else:
+                    if data_shape[coord[1]] != 1:
+                        raise ValueError(coord_len_error.format(coord[0], 1, data_shape[coord[1]]))
         # Determine wcs axis corresponding to data axis of coord
         extra_coords_wcs_axis[coord[0]] = {
             "wcs axis": data_axis_to_wcs_axis(coord[1], missing_axis),
