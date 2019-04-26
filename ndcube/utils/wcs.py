@@ -117,123 +117,139 @@ class WCS(wcs.WCS):
         return newheader
 
 
-def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
+def _wcs_slicer(wcs, missing_axes, item):
     """
-    Returns the new sliced wcs and changed missing axis.
+    Returns the new sliced wcs, changed missing axes, and coordinates of dropped axes.
 
     Paramters
     ---------
     wcs: `astropy.wcs.WCS` or `ndcube.utils.wcs.WCS`
         WCS object to be sliced.
 
-    missing_axis: `list` of `bool`
-        Indicates which axes of the WCS are "missing", i.e. do not correspond to a data axis.
+    missing_axes: `list` of `bool`
+        Indicates which axes of the WCS are "missing" i.e. do not correspond to a data axis.
+        Must be supplied in WCS order.
 
     item: `int`, `slice` or `tuple` of `int` and/or `slice`.
-        Slicing item.
-        If numpy_order=True, the axes must be in a reversed order to those in the wcs input.
-        If numpy_order=False, the axes must be entered in the same order as those in the wcs input.
-
-    numpy_order: bool
-        If True, it indicates that the axes in the item parameter are in the reversed order
-        to those in the wcs input, i.e. item is in numpy order. If False, the axes in item have
-        been entered in the same order as those in the wcs input. Default=True.
+        Slicing item. Must be supplied in numpy order and not include entries for missing axes.
+        See Notes for further explanation.
 
     Returns
     -------
     new_wcs: `astropy.wcs.WCS` or `ndcube.utils.wcs.WCS`
         Sliced WCS object.
 
-    missing_axis: `list` of `bool`
-        Altered missing axis list.  Note the ordering has been reversed to reflect the data
-        (numpy) axis ordering convention.
+    new_missing_axes: `list` of `bool`
+        Altered missing axis list in WCS order
 
     dropped_coords:
         Coordinates which have been dropped in the slicing process is collected
-        in a dictionary called `dropped_coords`.
+        in a dictionary called dropped_coords.
+
+    Notes
+    -----
+    A clarifying example of axis ordering of wcs, missing_axes and item.
+
+    Let's say we have a wcs object with four axes (2, 1, 5, 4) and a
+    missing_axes list of [False, True, False, False].
+    This means that the 1th axis of the wcs is "missing".
+    Note that the ordering of these axes are in WCS order, i.e. the reverse of
+    numpy order which is the order the data axes are given.
+    So the data shape must be (4, 5, 2), given that we have one "missing" axis.
+    The item object must be in numpy order and mustn't account for missing axes.
+    So a valid item object would be (slice(2, 4), slice(0, 1), slice(None)),
+    where the 0th entry gives the slice to be applied the WCS axis of length 4,
+    the middle slice is applied to WCS axis of length 5,
+    the missing axis is not represented,
+    and the last entry is applied to the WCS axis to length 2.
 
     """
-    # Force item to be WCS order if entered by user in numpy order.
-    if numpy_order is True:
-        # Convert item to a tuple is not already so we can handle it in a common way.
-        if isinstance(item, (int, np.int64, slice)):
-            item = (item)
-        # If item does not contain entries for all data axes, add empty slices for those axes.
-        n_add_axes = sum(np.invert(missing_axis)) - len(item)
-        item = tuple(list(item) + [slice(None)]*n_add_axes)
-        # Reverse order of item to be in WCS order.
-        item = item[::-1]
-    # normal slice.
+    # item is entered in numpy order and does not include entries for missing axes.
+    # But it is easier for it to be in WCS order and include entries for missing axes
+    # for extracting real world coordinates of dropped axes.
+    # Due to the possibility of missing axes, the best thing to do
+    # is first reverse the missing_axes variable, then prep the item
+    # to account for those missing axes and any non-missing axes not to be sliced.
+    # This will make the item the same length as the number of axes in the WCS object
+    # meaning it can be safely reversed to WCS order.
+    missing_axes_numpy_order = missing_axes[::-1]
+
+    # Next prep the item to include slices foe missing axes and
+    # non-missing axes that aren't to be sliced.
+    # To do this, create a tuple of slices where
+    # elements corresponding to missing axes are set to slice(0,1),
+    # non-missing axes with a corresponding slice in item are assigned that slice,
+    # and subsequent non-missing axes without an entry in item are set to slice(None).
+    # If item or tuple element is an int, convert to the appropriate slice
+    # so we easily search for new missing/dropped axes later.
     item_checked = []
-    if isinstance(item, slice):
+    # Case where item is a slice or int.
+    if isinstance(item, (slice, int, np.int64)):
+        # Create index to track whether we have reached the axis relevant to the item.
         index = 0
-        # Creating a new tuple of slice where if the axis is dead, i.e. missing,
-        # then slice(0,1) added, else slice(None, None, None) is appended; and,
-        # if the check of missing_axis gives that this is the index where it
-        # needs to be appended then it gets appended there.
-        for i, _bool in enumerate(missing_axis):
-            if not _bool:
-                if index != 1:
-                    item_checked.append(item)
-                    index += 1
-                else:
-                    item_checked.append(slice(None, None, None))
-            else:
+        for i, _bool in enumerate(missing_axes_numpy_order):
+            if _bool:
+                # Enter slice(0, 1) for any missing axis.
                 item_checked.append(slice(0, 1))
-        item_ = (item_checked)
-    # item is int then slicing axis.
-    elif isinstance(item, int) or isinstance(item, np.int64):
-        # Using index to keep track of whether the int(which is converted to
-        # slice(int_value, int_value+1)) is already added or not. It checks
-        # the dead axis i.e. missing_axis to check if it is dead than slice(0,1)
-        # is appended in it. if the index value has reached 1 then the
-        # slice(None, None, None) is added.
-        index = 0
-        for i, _bool in enumerate(missing_axis):
-            if not _bool:
-                if index != 1:
-                    item_checked.append(slice(item, item + 1))
-                    index += 1
-                else:
-                    item_checked.append(slice(None, None, None))
             else:
-                item_checked.append(slice(0, 1))
-        item_ = (item_checked)
-    # if it a tuple like (0:2, 0:3, 2) or (0:2, 1:3)
+                if index == 0:
+                    # Enter item into tuple for first non-missing axis.
+                    if isinstance(item, slice):
+                        item_checked.append(item)
+                    else:
+                        item_checked.append(slice(item, item + 1))
+                else:
+                    # As item is a slice or int, subsequent non-missing axes are not to be sliced.
+                    item_checked.append(slice(None, None))
+                index += 1
+        item_ = tuple(item_checked)
+
+    # Case where item is a tuple of slices or ints.
     elif isinstance(item, tuple):
-        # This is used to not exceed the range of the item tuple
-        # if the check of the missing_axis which is False if not dead
-        # is a success than the the item of the tuple is added one by
-        # one, and if the end of tuple is reached than slice(None, None, None)
-        # is appended.
+        # Create index to track whether the item tuple elements we are dealing with.
         index = 0
-        for i, _bool in enumerate(missing_axis):
-            if not _bool:
-                if index != len(item):
+        len_item = len(item)
+        for i, _bool in enumerate(missing_axes_numpy_order):
+            if _bool:
+                # Enter slice(0, 1) for any missing axis.
+                item_checked.append(slice(0, 1))
+            else:
+                if index < len_item:
+                    # For non-missing axes with a corresponding sub-item,
+                    # append that item here. If the sub-item is an int,
+                    # convert to appropriate slice for easy identification
+                    # of newly missing/dropped axes later.
                     if isinstance(item[index], (int, np.int64)):
                         item_checked.append(slice(item[index], item[index]+1))
-                    else:
+                    elif isinstance(item[index], slice):
                         item_checked.append(item[index])
-                    index += 1
+                    else:
+                        raise TypeError("item type at data axis {0} is {1}. ".format(
+                            index, type(item[index]) + "Must be int or slice."))
                 else:
-                    item_checked.append(slice(None, None, None))
-            else:
-                item_checked.append(slice(0, 1))
-        # if all are slices in the item tuple
-        if _all_slice(item_checked):
-            item_ = (item_checked)
-        # if all are not slices some of them are int then
-        else:
-            # this will make all the item in item_checked as slice.
-            item_ = _slice_list(item_checked)
+                    # Subsequent non-missing axes did not have a corresponding slice item
+                    # and are therefore not be sliced.
+                    item_checked.append(slice(None, None))
+                index += 1
+        item_ = tuple(item_checked)
+
+    # Case where item is an an invalid format.
     else:
         raise TypeError("item type is {0}.  ".format(type(item)) +
                         "Must be int, slice, or tuple of ints and/or slices.")
-    # returning the reverse list of missing axis as in the item here was reverse of
-    # what was inputed so we had a reverse missing_axis.
-    dropped_coords = {}  # Initiating new list to collect dropped coords in the process of slicing.
-    # Checking item_ slices for dropped axes if any.
-    for i, slice_element in enumerate(item_):
+
+    # Now item_ has an entry for all axes, missing and non-missing,
+    # it can be safely reverse to WCS order
+    # which makes extracting real world coordinates of newly missing/dropped axes easier.
+    item_wcs_order = item[::-1]
+
+    # Determine which axes will be made missing by this slicing
+    # and extract the real world coordinate for each.
+    # For this, use WCS-order variables, i.e. missing_axes and item_wcs_order.
+    dropped_coords = {}
+    for i, slice_element in enumerate(item_wcs_order):
+        # If axis is not missing and the difference between its start and stop params is 1,
+        # then the slicing will cause the axis to be dropped, i.e. become missing.
         if missing_axis[i] is False:
             # Determine the start index.
             if slice_element.start is None:
@@ -253,25 +269,26 @@ def _wcs_slicer(wcs, missing_axis, item, numpy_order=True):
                 # slice_step = 1
             # else:
                 # slice_step = slice_element.step
+            slice_step = 1
             real_world_coords = []
-            if slice_stop - slice_start == 1:
+            # If slice results in the axis being of length 1, is will be dropped.
+            # Calculate its real world coordinate.
+            if slice_stop - slice_start <= slice_step:
                 # Set up a list of pixel coords as input to all_pix2world.
-                pix_coords = [0] * len(item_)
+                pix_coords = [0] * len(item_wcs_order)
                 # Enter pixel coordinate for this axis.
                 pix_coords[i] = slice_element.start
                 # Get real world coordinates of i-th axis.
-                temp_real_world_coords = wcs.all_pix2world(*pix_coords, 0)[i]
+                real_world_coords = wcs.all_pix2world(*pix_coords, 0)[i]
                 # Get IVOA axis name from CTYPE.
-                real_world_coords = Quantity(temp_real_world_coords, unit=wcs.wcs.cunit[i])
                 axis_name = _get_ivoa_from_ctype(wcs.wcs.ctype[i])
                 # Add dropped coordinate's name, axis and value to dropped_coords dict of dicts.
-                dropped_coords[axis_name] = {"wcs axis": i, "value": real_world_coords}
+                dropped_coords[axis_name] = {"wcs axis": i,
+                                             "value": real_world_coords * wcs.wcs.cunit[i]}
                 missing_axis[i] = True
-    # Use item_ to slice WCS.
-    # As item order is always forced to be in WCS order at the start of this function,
-    # numpy_order here should always be set to False here.
-    new_wcs = wcs.slice(item_, numpy_order=False)
-    return new_wcs, missing_axis, dropped_coords
+    # Use item_wcs_order to slice WCS.
+    new_wcs = wcs.slice(item_wcs_order, numpy_order=False)
+    return new_wcs, new_missing_axes, dropped_coords
 
 
 def _get_ivoa_from_ctype(ctype):

@@ -68,7 +68,7 @@ class NDCubeSlicingMixin(NDSlicingMixin):
         # here missing axis is reversed as the item comes already in the reverse order
         # of the input
         return utils.wcs._wcs_slicer(
-            self.wcs, copy.deepcopy(self.missing_axis[::-1]), item)
+            self.wcs, copy.deepcopy(self.missing_axis), item)
 
     def _slice_extra_coords(self, item, missing_axis):
         if self.extra_coords is None:
