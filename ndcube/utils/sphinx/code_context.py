@@ -15,8 +15,8 @@ class ExpandingCodeBlock(CodeBlock):
     It behaves like the code-block directive, with the addition of a
     ``:summary:`` option, which sets the unexpanded text.
     """
-    has_content = True
-    required_arguments = 0
+    has_content = False
+    required_arguments = 1
     optional_arguments = 1
     final_argument_whitespace = False
     option_spec = {
@@ -29,13 +29,14 @@ class ExpandingCodeBlock(CodeBlock):
         'class': directives.class_option,
         'name': directives.unchanged,
         'summary': directives.unchanged_required,
+        'add-prompt': directives.flag,
     }
 
     def run(self):
         source, lineno = self.state_machine.get_source_and_line(self.lineno)
 
+        # Setup html tags
         summary_text = self.options.get('summary', 'Show setup code')
-
         opening_details = f"""\
         <details>
           <summary style="display: list-item; cursor: pointer;">{summary_text}</summary>
@@ -45,6 +46,20 @@ class ExpandingCodeBlock(CodeBlock):
 
         close_raw_node = nodes.raw('', "</details>", format='html')
         close_raw_node.source, close_raw_node.line = source, lineno
+
+        # Load code content from file
+        filename = self.arguments[0]
+        with open(filename) as fobj:
+            content = fobj.read()
+
+        content = content.splitlines()
+
+        if 'add-prompt' in self.options:
+            for i, line in enumerate(content):
+                content[i] = '>>> ' + line
+
+        self.content = content
+        self.arguments[0] = 'python'
 
         literal = super().run()[0]
 
