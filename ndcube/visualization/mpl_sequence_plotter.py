@@ -73,9 +73,9 @@ class MatplotlibSequencePlotter(BasePlotter):
         return SequenceAnimator(self._sequence, sequence_axis_coord=sequence_axis_coord,
                                 sequence_axis_unit=sequence_axis_unit, **kwargs)
 
-    def imshow(self, axes=None, sequence_axis_coord=None, sequence_axis_unit=None,
-               cube_axis_coord=None, cube_axis_unit=None, data_unit=None,
-               transpose=False, **kwargs):
+    def plot_image(self, axes=None, sequence_axis_coord=None, sequence_axis_unit=None,
+                   cube_axis_coord=None, cube_axis_unit=None, data_unit=None,
+                   transpose=False, **kwargs):
         seq_dims = self._get_sequence_shape()
         if (seq_dims[1:] > 1).sum() > 1:
             raise ValueError(BAD_DIMS_ERROR_MESSAGE)
