@@ -65,31 +65,23 @@ intersphinx_mapping = {
                (None, 'http://data.astropy.org/intersphinx/python3.inv')),
     'numpy': ('https://docs.scipy.org/doc/numpy/',
               (None, 'http://data.astropy.org/intersphinx/numpy.inv')),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference/',
-              (None, 'http://data.astropy.org/intersphinx/scipy.inv')),
     'matplotlib': ('https://matplotlib.org/',
                    (None, 'http://data.astropy.org/intersphinx/matplotlib.inv')),
     'astropy': ('http://docs.astropy.org/en/stable/', None),
     'sunpy': ('https://docs.sunpy.org/en/stable/', None),
+    'mpl_animators': ('https://docs.sunpy.org/projects/mpl-animators/en/stable/', None),
     'gwcs': ('https://gwcs.readthedocs.io/en/stable/', None)}
 
 # -- Options for HTML output -------------------------------------------------
+# Load the theme config from the theme package
+from sunpy_sphinx_theme.conf import *
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-
-try:
-    from sunpy_sphinx_theme.conf import *
-except ImportError:
-    html_theme = 'default'
-
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
+# Use the ndcube logo rather than the sunpy one
+html_logo = png_icon = 'logo/ndcube.png'
+html_favicon = 'logo/favicon.png'
 
 # Render inheritance diagrams in SVG
-graphviz_output_format = "svg"
+graphviz_output_format = 'svg'
 
 graphviz_dot_args = [
     '-Nfontsize=10',

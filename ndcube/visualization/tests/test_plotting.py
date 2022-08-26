@@ -1,8 +1,8 @@
 import astropy.units as u
 import matplotlib.pyplot as plt
+import mpl_animators
 import numpy as np
 import pytest
-import sunpy.visualization.animator
 from astropy.visualization.wcsaxes import WCSAxes
 from astropy.wcs import WCS
 
@@ -84,7 +84,7 @@ def test_plot_2D_cube_from_slice(ndcube_4d, cslice, kwargs):
 def test_animate_2D_cube(ndcube_2d_ln_lt):
     cube = ndcube_2d_ln_lt
     ax = cube.plot(plot_axes=[None, 'x'])
-    assert isinstance(ax, sunpy.visualization.animator.ArrayAnimatorWCS)
+    assert isinstance(ax, mpl_animators.ArrayAnimatorWCS)
 
     return ax.fig
 
@@ -95,7 +95,7 @@ def test_animate_2D_cube(ndcube_2d_ln_lt):
                              ("ln_lt_l_t", np.s_[:, :, 0, :], {}),
                              ("ln_lt_l_t", np.s_[:, :, 0, :], {'plot_axes': [..., 'x']}),
                              ("ln_lt_l_t", None, {}),
-                             ("ln_lt_l_t", None, {"plot_axes": [0, 0, 'x', 'y']}),
+                             ("ln_lt_l_t", None, {"plot_axes": [0, 0, 'x', 'y'], "axes_units": [None, None, u.pm, None]}),
                              ("ln_lt_l_t", None, {"plot_axes": [0, 'x', 0, 'y']}),
                              ("ln_lt_l_t", np.s_[0, :, :, :], {}),
                              ("ln_lt_l_t", np.s_[:, :, :, :], {}),
@@ -108,7 +108,7 @@ def test_animate_cube_from_slice(ndcube_4d, cslice, kwargs):
     else:
         sub = ndcube_4d
     ax = sub.plot(**kwargs)
-    assert isinstance(ax, sunpy.visualization.animator.ArrayAnimatorWCS)
+    assert isinstance(ax, mpl_animators.ArrayAnimatorWCS)
 
     return ax.fig
 

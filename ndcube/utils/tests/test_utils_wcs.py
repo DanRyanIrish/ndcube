@@ -34,14 +34,10 @@ def axis_correlation_matrix():
 
 
 def _axis_correlation_matrix():
-    shape = (4, 4)
-    acm = np.zeros(shape, dtype=bool)
-    for i in range(min(shape)):
-        acm[i, i] = True
-    acm[0, 1] = True
-    acm[1, 0] = True
-    acm[-1, 0] = True
-    return acm
+    return np.array([[True, True, False, False],
+                     [True, True, False, False],
+                     [False, False, True, False],
+                     [True, False, False, True]], dtype=bool)
 
 
 @pytest.fixture
@@ -80,7 +76,6 @@ def test_pixel_axis_to_physical_types(test_wcs):
     output = utils.wcs.pixel_axis_to_physical_types(0, test_wcs)
     expected = np.array(['custom:pos.helioprojective.lon',
                          'custom:pos.helioprojective.lat', 'time'])
-    print(output, expected)
     assert all(output == expected)
 
 
@@ -112,14 +107,14 @@ def test_get_dependent_array_axes(axis_correlation_matrix):
 
 def test_get_dependent_world_axes(axis_correlation_matrix):
     output = utils.wcs.get_dependent_world_axes(3, axis_correlation_matrix)
-    expected = np.array([0, 3])
-    print(output, expected)
+    expected = np.array([0, 1, 3])
     assert all(output == expected)
 
 
 def test_get_dependent_physical_types(test_wcs):
     output = utils.wcs.get_dependent_physical_types("time", test_wcs)
-    expected = np.array(['custom:pos.helioprojective.lon', 'time'])
+    expected = np.array(['custom:pos.helioprojective.lon',
+                         'custom:pos.helioprojective.lat', 'time'])
     assert all(output == expected)
 
 
@@ -162,3 +157,19 @@ def test_array_indices_for_world_objects_2(wcs_4d_lt_t_l_ln):
 def test_compare_wcs_physical_types(wcs_4d_t_l_lt_ln, wcs_3d_l_lt_ln):
     assert utils.wcs.compare_wcs_physical_types(wcs_4d_t_l_lt_ln, wcs_4d_t_l_lt_ln) is True
     assert utils.wcs.compare_wcs_physical_types(wcs_4d_t_l_lt_ln, wcs_3d_l_lt_ln) is False
+
+
+def test_identify_invariant_axes(wcs_3d_l_lt_ln):
+    source_wcs = wcs_3d_l_lt_ln
+
+    target_wcs_header = wcs_3d_l_lt_ln.low_level_wcs.to_header().copy()
+    target_wcs_header['CDELT2'] = 10
+    target_wcs_header['CDELT3'] = 20
+    target_wcs = WCS(header=target_wcs_header)
+
+    invariant_axes = utils.wcs.identify_invariant_axes(source_wcs, target_wcs, (4, 4, 4))
+    assert invariant_axes == [True, False, False]
+
+    invariant_axes = utils.wcs.identify_invariant_axes(source_wcs, target_wcs, (4, 4, 4),
+                                                       atol=1e-20, rtol=1e-20)
+    assert invariant_axes == [False, False, False]
