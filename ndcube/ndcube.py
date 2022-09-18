@@ -874,6 +874,140 @@ class NDCubeBase(NDCubeSlicingMixin, NDCubeABC):
 
         return new_cube
 
+    def sum(self, axis=None, correlation=0):
+        """
+        Sums cube over an axis or axes.
+
+        Parameters
+        ----------
+        axis: `int` or iterable of `int`
+            The axis or axes over which to sum.
+
+        correlation:
+            Passed to `astropy.nddata.NDUncertainty`. See docstring there.
+            Default=0
+
+        Returns
+        -------
+        : `ndcube.NDCube` or `astropy.nddata.NDData`
+            The resultant cube. If summed over all axes, type returned is an
+            `astropy.nddata.NDData`.  Otherwise an `ndcube.NDCube` is returned.
+        """
+        return self._aggregate_axis(axis, "sum", correlation)
+
+    def mean(self, axis=None, correlation=0):
+        """
+        Takes mean of cube over an axis or axes.
+
+        Parameters
+        ----------
+        axis: `int` or iterable of `int`
+            The axis or axes over which to sum.
+
+        correlation:
+            Passed to `astropy.nddata.NDUncertainty`. See docstring there.
+            Default=0
+
+        Returns
+        -------
+        : `ndcube.NDCube` or `astropy.nddata.NDData`
+            The resultant cube. If summed over all axes, type returned is an
+            `astropy.nddata.NDData`.  Otherwise an `ndcube.NDCube` is returned.
+        """
+        return self._aggregate_axis(axis, "mean", correlation)
+
+    def median(self, axis=None):
+        """
+        Takes min of cube over an axis or axes.
+
+        Parameters
+        ----------
+        axis: `int` or iterable of `int`
+            The axis or axes over which to sum.
+
+        Returns
+        -------
+        : `ndcube.NDCube` or `astropy.nddata.NDData`
+            The resultant cube. If summed over all axes, type returned is an
+            `astropy.nddata.NDData`.  Otherwise an `ndcube.NDCube` is returned.
+        """
+        return self._aggregate_axis(axis, "median")
+
+    def min(self, axis=None):
+        """
+        Takes min of cube over an axis or axes.
+
+        Parameters
+        ----------
+        axis: `int` or iterable of `int`
+            The axis or axes over which to sum.
+
+        Returns
+        -------
+        : `ndcube.NDCube` or `astropy.nddata.NDData`
+            The resultant cube. If summed over all axes, type returned is an
+            `astropy.nddata.NDData`.  Otherwise an `ndcube.NDCube` is returned.
+        """
+        return self._aggregate_axis(axis, "min")
+
+    def max(self, axis=None):
+        """
+        Takes max of cube over an axis or axes.
+
+        Parameters
+        ----------
+        axis: `int` or iterable of `int`
+            The axis or axes over which to sum.
+
+        Returns
+        -------
+        : `ndcube.NDCube` or `astropy.nddata.NDData`
+            The resultant cube. If summed over all axes, type returned is an
+            `astropy.nddata.NDData`.  Otherwise an `ndcube.NDCube` is returned.
+        """
+        return self._aggregate_axis(axis, "max")
+
+    def _aggregate_axis(self, axis, method, correlation=None):
+        ndim = self.data.ndim
+        if isinstance(axis, Integral):
+            axis = [axis]
+        elif axis is None:
+            axis = range(ndim)
+        axis = np.array(axis).astype(int)
+        superpixel_shape = np.ones(ndim, dtype=int)
+        superpixel_shape[axis] = self.dimensions.value[axis]
+        summed_cube = self.superpixel(superpixel_size, method=method, correlation=correlation)
+        return summed_cube.squeeze()
+
+    def squeeze(self):
+        """Remove array axes of length one."""
+        shape = self.dimensions.value.astype(int)
+        ndim = len(shape)
+        axis, = np.where(shape == 1)
+        if len(axis) != ndim:
+            item = np.array([slice(None)] * ndim)
+            item[axis] = 0
+            return self[item]
+        else:
+            data = self.data.squeeze()
+            uncertainty = copy.deepcopy(self.uncertainty)
+            uncertainty.array = uncertainty.array.squeeze()
+            mask = self.mask.squeeze()
+            wcs_coords = self.axis_world_coords()
+            extra_coords = self.axis_world_coords(wcs=self.extra_coords)
+            global_coords = copy.deepcopy(self.global_coords)
+            for name, physical_type, coord in zip(self.wcs.low_level_wcs.world_axis_names,
+                                                  self.wcs.world_axis_physical_types, wcs_coords):
+                i = 0
+                global_names = set(global_coords._internal_coords.keys())
+                while name in global_names:
+                    i += 1
+                if i > 0:
+                    name = f"{name}{i}"
+                global_names.add(name, physical_type, coord)
+            return astropy.nddata.NDData(data=data, uncertainty=uncertainty, mask=mask,
+                                         wcs=global_coords, unit=self.unit, meta=self.meta)
+
 
 class NDCube(NDCubeBase):
     """
